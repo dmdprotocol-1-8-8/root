@@ -45,7 +45,6 @@ Once deployed, DMD Protocol runs autonomously and permanently.
 13. Roadmap
 14. Conclusion
 15. Intellectual Property Notice
-16. Appendix: Version 1.8.8 Changes
 
 ---
 
