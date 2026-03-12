@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DMD Protocol — Whitepaper v1.8.8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --p:#0540df;--pd:rgba(5,64,223,.07);--pb:rgba(5,64,223,.13);--pl:#eef3ff;
+  --bg:#f4f6fb;--c:#ffffff;--t:#0a0f1e;--tm:#2a3a5c;--b:#d0d9ef;
+  --mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Lora','Georgia',serif;background:var(--bg);color:var(--t);line-height:1.85;font-size:17px;-webkit-font-smoothing:antialiased}
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:256px;flex-shrink:0;background:var(--pl);border-right:1px solid var(--b);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--b)}
+.sb-brand{padding:26px 22px 18px;border-bottom:1px solid var(--b)}
+.sb-logo{font-size:1rem;font-weight:700;color:var(--t);letter-spacing:-.01em;display:flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif}
+.sb-logo-hex{color:var(--p)}
+.sb-doc-label{margin-top:5px;font-size:.68rem;text-transform:uppercase;letter-spacing:.13em;color:var(--p);font-weight:700;opacity:.7;font-family:'DM Sans',sans-serif}
+.sb-nav{padding:14px 0;flex:1}
+.sb-cat{padding:12px 22px 4px;font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--tm);font-weight:700;opacity:.45;font-family:'DM Sans',sans-serif}
+.sb-link{display:flex;align-items:center;gap:8px;padding:7px 22px;font-size:.84rem;color:var(--tm);text-decoration:none;transition:all .15s;border-left:2px solid transparent;font-weight:500;line-height:1.4;font-family:'DM Sans',sans-serif}
+.sb-link:hover{color:var(--p);background:rgba(5,64,223,.05);border-left-color:rgba(5,64,223,.3)}
+.sb-link.active{color:var(--p);background:rgba(5,64,223,.09);border-left-color:var(--p);font-weight:700}
+.sb-link-icon{font-size:.84rem;flex-shrink:0;width:16px;text-align:center;color:var(--p)}
+.sb-footer{border-top:1px solid var(--b);padding:14px 22px}
+.sb-back{display:flex;align-items:center;gap:5px;font-size:.82rem;color:var(--tm);text-decoration:none;transition:color .15s;font-weight:600;font-family:'DM Sans',sans-serif}
+.sb-back:hover{color:var(--p)}
+
+/* MAIN */
+.main{flex:1;padding:56px 80px;min-width:0}
+
+/* DOC HEADER */
+.doc-header{margin-bottom:48px;padding-bottom:36px;border-bottom:2px solid var(--b)}
+.doc-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--p);background:var(--pd);border:1px solid var(--pb);padding:5px 14px;margin-bottom:18px;font-family:'DM Sans',sans-serif}
+.doc-title{font-size:3rem;font-weight:700;letter-spacing:-.02em;line-height:1.12;color:var(--t);margin-bottom:14px;font-family:'Lora',serif}
+.doc-title .accent{color:var(--p)}
+.doc-desc{font-size:1.1rem;color:var(--tm);line-height:1.8;max-width:720px;margin-bottom:22px;font-family:'Lora',serif}
+.doc-meta{display:flex;flex-wrap:wrap;gap:8px}
+.doc-pill{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;color:var(--p);background:var(--pd);border:1px solid var(--pb);padding:5px 13px;font-family:'DM Sans',sans-serif}
+
+/* HEADINGS */
+h2{font-size:1.65rem;font-weight:700;color:var(--t);margin:52px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--b);letter-spacing:-.01em;display:flex;align-items:center;gap:10px;font-family:'Lora',serif;line-height:1.3}
+h2 .ico{font-size:1rem;color:var(--p);font-family:'DM Sans',sans-serif}
+h3{font-size:1.15rem;font-weight:600;color:var(--t);margin:28px 0 10px;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif}
+h3 .ico{font-size:.9rem;color:var(--p)}
+h4{font-size:.9rem;font-weight:700;color:var(--p);margin:18px 0 6px;text-transform:uppercase;letter-spacing:.07em;font-family:'DM Sans',sans-serif}
+
+/* PROSE */
+p{margin-bottom:16px;color:var(--tm);font-size:1rem;line-height:1.85;font-family:'Lora',serif}
+strong{color:var(--t);font-weight:700}
+em{font-style:italic;color:var(--p)}
+a{color:var(--p);text-decoration:none;font-weight:600}
+a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid var(--b);margin:36px 0}
+
+/* LISTS */
+ul,ol{margin:0 0 16px;padding:0;list-style:none}
+ul li,ol li{padding:5px 0 5px 22px;position:relative;color:var(--tm);font-size:1rem;line-height:1.78;font-family:'Lora',serif}
+ul li::before{content:'›';position:absolute;left:0;top:4px;color:var(--p);font-size:1.1rem;font-weight:700;font-family:'DM Sans',sans-serif}
+ol{counter-reset:n}
+ol li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:6px;width:16px;height:16px;background:var(--p);color:#fff;font-size:.63rem;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
+li strong{color:var(--t)}
+
+/* CODE */
+code{font-family:var(--mono);font-size:.82rem;background:var(--pd);color:var(--p);padding:2px 8px;font-weight:500;border:1px solid var(--pb)}
+pre{background:var(--pl);border:1px solid var(--b);color:var(--t);padding:20px 24px;margin:14px 0 20px;overflow-x:auto;font-family:var(--mono);font-size:.83rem;line-height:1.8;border-left:3px solid var(--p)}
+pre code{background:none;color:inherit;padding:0;border:none;font-size:inherit}
+
+/* BLOCKQUOTE */
+blockquote{border-left:3px solid var(--p);background:var(--pd);padding:16px 20px;margin:18px 0;color:var(--tm);font-style:italic;font-size:1rem;line-height:1.8;font-family:'Lora',serif}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:.93rem;font-family:'DM Sans',sans-serif}
+th{background:var(--p);color:#fff;padding:11px 16px;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+td{padding:11px 16px;border-bottom:1px solid var(--b);color:var(--tm);vertical-align:top;line-height:1.65}
+tr:hover td{background:var(--pd)}
+td code{font-size:.8rem}
+
+/* CALLOUT BOXES */
+.box{padding:16px 20px;margin:18px 0;font-size:.97rem;border-left:3px solid var(--p);background:var(--pd);border:1px solid var(--pb);border-left-width:3px;font-family:'DM Sans',sans-serif}
+.box-title{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;color:var(--p)}
+.box p{font-size:.95rem;font-family:'DM Sans',sans-serif;margin-bottom:6px;line-height:1.75}
+.box-blue{background:var(--pd);border-color:var(--pb);border-left-color:var(--p)}
+.box-blue .box-title{color:var(--p)}
+.box-dark{background:var(--pl);border-color:var(--b);border-left-color:var(--p)}
+.box-dark .box-title{color:var(--t)}
+.box-warn{background:var(--pd);border-color:var(--pb);border-left-color:var(--p)}
+.box-warn .box-title{color:var(--t);font-weight:900}
+.box-warn ul li,.box-warn p{color:var(--tm)}
+.box-warn strong{color:var(--t)}
+
+/* STEP CARDS */
+.steps{display:flex;flex-direction:column;gap:10px;margin:16px 0}
+.step{display:flex;gap:16px;background:var(--c);border:1px solid var(--b);border-left:3px solid var(--p);padding:18px 20px}
+.step-n{min-width:28px;height:28px;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.74rem;font-weight:800;flex-shrink:0;align-self:flex-start;margin-top:3px;font-family:'DM Sans',sans-serif}
+.step-body .step-t{font-weight:700;color:var(--t);font-size:.98rem;margin-bottom:5px;font-family:'DM Sans',sans-serif}
+.step-body p{margin:0;font-size:.93rem;line-height:1.7;color:var(--tm);font-family:'DM Sans',sans-serif}
+
+/* FEATURE GRID */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin:16px 0}
+.feat{background:var(--c);border:1px solid var(--b);border-top:3px solid var(--p);padding:18px 20px}
+.feat-icon{font-size:1.2rem;margin-bottom:7px;color:var(--p);font-family:'DM Sans',sans-serif}
+.feat-label{font-size:.78rem;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-family:'DM Sans',sans-serif}
+.feat-desc{font-size:.9rem;color:var(--tm);line-height:1.65;font-family:'DM Sans',sans-serif}
+
+/* STAT ROW */
+.stat-row{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}
+.stat{background:var(--p);color:#fff;padding:18px 24px;flex:1;min-width:130px;border:1px solid rgba(5,64,223,.3)}
+.stat-val{font-size:1.7rem;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1;font-family:'DM Sans',sans-serif}
+.stat-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.7);margin-top:6px;font-weight:600;font-family:'DM Sans',sans-serif}
+.stat-accent{color:#bfd4ff}
+
+/* LOOP DIAGRAM */
+.loop{display:flex;align-items:center;gap:0;margin:20px 0;flex-wrap:wrap}
+.loop-step{background:var(--p);color:#fff;padding:14px 20px;font-size:.86rem;font-weight:700;flex:1;text-align:center;min-width:110px;border-right:1px solid rgba(255,255,255,.2);font-family:'DM Sans',sans-serif}
+.loop-step:last-child{border-right:none}
+.loop-step span{display:block;font-size:1rem;margin-bottom:4px;color:rgba(255,255,255,.8)}
+.loop-arrow{font-size:1.1rem;color:var(--p);padding:0 4px;font-weight:900}
+
+/* FAQ */
+.faq-item{background:var(--c);border:1px solid var(--b);border-left:3px solid transparent;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.faq-item:hover,.faq-item.open{border-left-color:var(--p);background:var(--pl)}
+.faq-q{padding:15px 19px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:700;color:var(--t);font-size:.97rem;user-select:none;font-family:'DM Sans',sans-serif;line-height:1.5}
+.faq-q .arr{color:var(--p);font-size:.82rem;transition:transform .2s;flex-shrink:0}
+.faq-item.open .arr{transform:rotate(90deg)}
+.faq-a{display:none;padding:4px 19px 16px;color:var(--tm);font-size:.97rem;line-height:1.82;border-top:1px solid var(--b);font-family:'Lora',serif}
+.faq-a p{margin-bottom:10px;color:var(--tm)}
+.faq-a p:last-child{margin:0}
+.faq-item.open .faq-a{display:block}
+
+/* CHECKLIST */
+.cklist{list-style:none;padding:0;margin:12px 0}
+.cklist li{padding:6px 0 6px 26px;position:relative;color:var(--tm);font-size:.97rem;font-family:'DM Sans',sans-serif}
+.cklist li::before{content:'[ ]';position:absolute;left:0;color:var(--p);font-size:.72rem;top:8px;font-family:var(--mono);font-weight:700}
+
+/* DOC FOOTER */
+.doc-footer{margin-top:64px;padding:22px 26px;background:var(--pl);border:1px solid var(--b);border-top:2px solid var(--p);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:'DM Sans',sans-serif}
+.doc-footer-name{font-size:.9rem;font-weight:800;color:var(--t)}
+.doc-footer-sub{font-size:.73rem;color:var(--tm);margin-top:3px}
+.doc-footer-links{display:flex;gap:18px}
+.doc-footer-links a{font-size:.82rem;color:var(--p);text-decoration:none;font-weight:600;transition:opacity .15s}
+.doc-footer-links a:hover{opacity:.65}
+
+@media(max-width:1100px){.main{padding:44px 52px}}
+@media(max-width:800px){.main{padding:28px 24px}}
+@media(max-width:660px){
+  .sidebar{display:none}
+  .main{padding:22px 18px}
+  .doc-title{font-size:2.1rem}
+  .feat-grid{grid-template-columns:1fr}
+  .stat-row{flex-direction:column}
+  .loop{flex-direction:column}
+}
+
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo" style="align-items:center;">
+      <img src="logo.svg" alt="DMD" style="height:2rem;width:auto;">
+      <span style="margin-left:8px;">DMD Protocol</span>
+    </div>
+    <div class="sb-doc-label">◈ Whitepaper v1.8.8</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-cat">Contents</div>
+    <a href="#executive-summary" class="sb-link active"><span class="sb-link-icon">◈</span>Executive Summary</a>
+    <a href="#introduction" class="sb-link"><span class="sb-link-icon">①</span>Introduction</a>
+    <a href="#design" class="sb-link"><span class="sb-link-icon">②</span>Design Principles</a>
+    <a href="#edad" class="sb-link"><span class="sb-link-icon">③</span>EDAD Mechanism</a>
+    <a href="#architecture" class="sb-link"><span class="sb-link-icon">④</span>Architecture</a>
+    <a href="#tokenomics" class="sb-link"><span class="sb-link-icon">⑤</span>Tokenomics</a>
+    <a href="#emissions" class="sb-link"><span class="sb-link-icon">⑥</span>Emission Model</a>
+    <a href="#redemption" class="sb-link"><span class="sb-link-icon">⑦</span>Redemption</a>
+    <a href="#pdc" class="sb-link"><span class="sb-link-icon">⑧</span>PDC</a>
+    <a href="#foundation" class="sb-link"><span class="sb-link-icon">◈️</span>Foundation</a>
+    <a href="#security" class="sb-link"><span class="sb-link-icon">◈</span>Security</a>
+    <a href="#technical" class="sb-link"><span class="sb-link-icon">⚙️</span>Technical Spec</a>
+    <a href="#testing" class="sb-link"><span class="sb-link-icon">◈</span>Testing</a>
+    <a href="#risks" class="sb-link"><span class="sb-link-icon">◆</span>Risks</a>
+    <a href="#roadmap" class="sb-link"><span class="sb-link-icon">◈️</span>Roadmap</a>
+    <a href="#ip" class="sb-link"><span class="sb-link-icon">◈️</span>IP Notice</a>
+    <div class="sb-cat" style="margin-top:10px">Other Docs</div>
+    <a href="UserGuide.html" class="sb-link"><span class="sb-link-icon">◈</span>User Guide</a>
+    <a href="FAQ.html" class="sb-link"><span class="sb-link-icon">◈</span>FAQ</a>
+    <a href="README.html" class="sb-link"><span class="sb-link-icon">◈</span>README</a>
+  </nav>
+  <div class="sb-footer"><a href="index.html" class="sb-back">← Back to App</a></div>
+</aside>
+
+<main class="main">
+  <div class="doc-header">
+    <div class="doc-eyebrow">◈ Whitepaper · January 2026</div>
+    <div class="doc-title" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+      <img src="logo.svg" alt="DMD Logo" style="height:3rem;width:auto;flex-shrink:0;">
+      <span>DMD Protocol<br><span class="accent">Whitepaper</span></span>
+    </div>
+    <div class="doc-desc">The technical specification for the Extreme Deflationary Digital Asset Mechanism (EDAD) — a reserve-locked, emission-capped, mandatory burn-to-redeem economic system on Base Mainnet.</div>
+    <div class="doc-meta">
+      <span class="doc-pill">◈️ Base Mainnet</span>
+      <span class="doc-pill">◆ v1.8.8</span>
+      <span class="doc-pill">◈️ Patent Pending</span>
+      <span class="doc-pill">◆ Production Ready</span>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <h2 id="executive-summary"><span class="ico">◈</span>Executive Summary</h2>
+  <p>DMD Protocol is a decentralized, immutable Bitcoin liquidity and emission protocol on Base implementing the <strong>Extreme Deflationary Digital Asset Mechanism (EDAD)</strong>. Users lock <strong>tBTC</strong> to earn <strong>DMD</strong> from a fixed, declining emission schedule. To unlock their tBTC, users must irreversibly burn 100% of all DMD minted from that specific position.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val">18<span class="stat-accent">M</span></div><div class="stat-lbl">Max DMD Supply</div></div>
+    <div class="stat"><div class="stat-val">14.4<span class="stat-accent">M</span></div><div class="stat-lbl">Emission Cap</div></div>
+    <div class="stat"><div class="stat-val">160<span class="stat-accent">+</span></div><div class="stat-lbl">Tests Passing</div></div>
+    <div class="stat"><div class="stat-val stat-accent">A+</div><div class="stat-lbl">Security Rating</div></div>
+  </div>
+  <div class="box box-dark"><div class="box-title">⬛ Immutability Guarantee</div>No governance · No admin keys · No upgrades · No emergency controls. Once deployed, DMD Protocol runs autonomously and permanently.</div>
+
+  <!-- INTRODUCTION -->
+  <h2 id="introduction"><span class="ico">①</span>Introduction</h2>
+  <h3><span class="ico">◈</span>Background</h3>
+  <p>Bitcoin is the most secure and scarce digital asset, yet remains largely idle in decentralized finance. Existing BTC-based protocols rely on custodians, inflationary incentives, governance-controlled emissions, or reversible supply mechanics.</p>
+  <p>DMD Protocol introduces a structurally different model: <strong>Bitcoin-backed scarcity enforced by code</strong>, not discretion.</p>
+  <h3><span class="ico">◎</span>Objectives</h3>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-icon">▼</div><div class="feat-label">Structurally Deflationary</div><div class="feat-desc">Every redemption permanently removes DMD from supply. Supply can only decrease.</div></div>
+    <div class="feat"><div class="feat-icon">⊘</div><div class="feat-label">Governance-Free</div><div class="feat-desc">No votes, no proposals, no admin keys. Rules are hardcoded and immutable.</div></div>
+    <div class="feat"><div class="feat-icon">◈</div><div class="feat-label">Whale-Resistant</div><div class="feat-desc">Deposits don't inflate emissions. Larger deposits reduce per-unit share, not increase total supply.</div></div>
+    <div class="feat"><div class="feat-icon">◈️</div><div class="feat-label">Fully Immutable</div><div class="feat-desc">No proxy contracts. No upgrade paths. No owner privileges post-deployment.</div></div>
+  </div>
+
+  <!-- DESIGN -->
+  <h2 id="design"><span class="ico">②</span>Design Principles</h2>
+  <h3><span class="ico">◎</span>Single-Asset Simplicity</h3>
+  <p>DMD Protocol accepts <strong>only tBTC</strong> — no WBTC, no synthetic derivatives, no multi-asset risk. tBTC provides decentralized custody, threshold security, and Ethereum-native settlement on Base.</p>
+  <h3><span class="ico">⏳</span>Time-Weighted Commitment</h3>
+  <p>Users lock tBTC for fixed durations. Longer commitments receive higher weight multipliers, increasing emission share. Weight <strong>vests over time</strong>, preventing flash-loan or short-term manipulation.</p>
+
+  <!-- EDAD -->
+  <h2 id="edad"><span class="ico">③</span>The EDAD Mechanism</h2>
+  <div class="box box-blue"><div class="box-title">● Definition</div>The <strong>Extreme Deflationary Digital Asset Mechanism (EDAD)</strong> is defined by five immutable properties that work together to create market-driven, permanent deflation.</div>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-body"><div class="step-t">⊕ Reserve-Locked Minting</div><p>DMD is minted <em>exclusively</em> through tBTC locking. No other mechanism can create DMD.</p></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-body"><div class="step-t">▼ Fixed, Declining Emission Pool</div><p>Emissions follow a deterministic 25% annual decay schedule, <em>independent</em> of participation levels or total deposits.</p></div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-body"><div class="step-t">⊘ Mandatory Burn-to-Redeem</div><p>Redemption of tBTC requires irreversible destruction of 100% of the DMD minted from that position.</p></div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-body"><div class="step-t">◈ Market-Behavior-Driven Deflation</div><p>User redemption behavior directly determines the deflation rate. Human psychology becomes the scarcity engine.</p></div></div>
+    <div class="step"><div class="step-n">5</div><div class="step-body"><div class="step-t">∞️ Permanent Supply Reduction</div><p>Burned DMD is removed forever — supply may fall <em>below</em> all theoretical caps. Deflation is irreversible.</p></div></div>
+  </div>
+  <h3><span class="ico">↻</span>The Closed Economic Loop</h3>
+  <div class="loop">
+    <div class="loop-step"><span>⊕</span>Lock tBTC</div>
+    <div class="loop-arrow">▶</div>
+    <div class="loop-step"><span>◆</span>Mint DMD</div>
+    <div class="loop-arrow">▶</div>
+    <div class="loop-step"><span>⊘</span>Burn DMD</div>
+    <div class="loop-arrow">▶</div>
+    <div class="loop-step"><span>₿</span>Unlock tBTC</div>
+  </div>
+  <p>This loop is irreversible and cannot be bypassed by any party — including the Foundation or developers.</p>
+
+  <!-- ARCHITECTURE -->
+  <h2 id="architecture"><span class="ico">④</span>Protocol Architecture</h2>
+  <h3><span class="ico">◈</span>Core Smart Contracts</h3>
+  <table>
+    <tr><th>Contract</th><th>Role</th></tr>
+    <tr><td>◈️ <strong>ProtocolDefenseConsensus</strong></td><td>Adapter-only governance. Pre-approves tBTC at deployment.</td></tr>
+    <tr><td>● <strong>BTCReserveVault</strong></td><td>tBTC locking, position tracking, emission accounting. Checks PDC for adapter status.</td></tr>
+    <tr><td>◈ <strong>EmissionScheduler</strong></td><td>Controls fixed, decaying annual emissions.</td></tr>
+    <tr><td>◈ <strong>MintDistributor</strong></td><td>Weekly proportional distribution. Single-transaction claims, no snapshots.</td></tr>
+    <tr><td>⊘ <strong>RedemptionEngine</strong></td><td>Enforces full burn-to-redeem logic. No exceptions.</td></tr>
+    <tr><td>◆ <strong>DMDToken (ERC-20)</strong></td><td>Fixed-supply token with public burn. Tracks unique holders for PDC activation.</td></tr>
+    <tr><td>⏳ <strong>VestingContract</strong></td><td>Diamond Vesting Curve for non-emission allocations.</td></tr>
+  </table>
+  <div class="box box-dark"><div class="box-title">⬛ Immutability Guarantees</div>No proxy contracts · No upgrade paths · No owner privileges post-deployment · All critical parameters hardcoded at deployment.</div>
+
+  <!-- TOKENOMICS -->
+  <h2 id="tokenomics"><span class="ico">⑤</span>Tokenomics</h2>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val">18<span class="stat-accent">M</span></div><div class="stat-lbl">Max Possible Supply</div></div>
+    <div class="stat"><div class="stat-val">14.4<span class="stat-accent">M</span></div><div class="stat-lbl">Emission-Reachable</div></div>
+    <div class="stat"><div class="stat-val stat-accent">∞↓</div><div class="stat-lbl">Real Supply (Deflationary)</div></div>
+  </div>
+  <table>
+    <tr><th>Allocation</th><th>%</th><th>Amount (DMD)</th><th>Vesting</th></tr>
+    <tr><td>◈️ BTC Mining Emissions</td><td><strong>80%</strong></td><td>14,400,000</td><td>EDAD emissions</td></tr>
+    <tr><td>◈️ Foundation</td><td>10%</td><td>1,800,000</td><td>Diamond Vesting Curve</td></tr>
+    <tr><td>◈ Founders</td><td>5%</td><td>900,000</td><td>Diamond Vesting Curve</td></tr>
+    <tr><td>◈ Developers</td><td>2.5%</td><td>450,000</td><td>Diamond Vesting Curve</td></tr>
+    <tr><td>◈ Contributors</td><td>2.5%</td><td>450,000</td><td>Diamond Vesting Curve</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>18,000,000</strong></td><td></td></tr>
+  </table>
+  <div class="box box-blue"><div class="box-title">◆ Diamond Vesting Curve</div>All non-emission allocations follow: <strong>5% at TGE</strong> + <strong>95% linear over 7 years</strong>. No cliff vesting, no surprise unlocks.</div>
+
+  <!-- EMISSIONS -->
+  <h2 id="emissions"><span class="ico">⑥</span>Emission Model</h2>
+  <h3><span class="ico">▼</span>Annual Quartering Schedule</h3>
+  <p>Emissions decay by <strong>25% annually</strong> — a Bitcoin-style halving, but quarterly:</p>
+  <table>
+    <tr><th>Year</th><th>Annual Emission</th><th>vs Previous</th></tr>
+    <tr><td>Year 1</td><td><strong>3,600,000 DMD</strong></td><td>—</td></tr>
+    <tr><td>Year 2</td><td>2,700,000 DMD</td><td>−25%</td></tr>
+    <tr><td>Year 3</td><td>2,025,000 DMD</td><td>−25%</td></tr>
+    <tr><td>Year 4</td><td>1,518,750 DMD</td><td>−25%</td></tr>
+    <tr><td>Year 5</td><td>1,139,062 DMD</td><td>−25%</td></tr>
+    <tr><td>Year 6+</td><td>×0.75 annually</td><td>−25%</td></tr>
+  </table>
+  <h3><span class="ico">◈️</span>Epoch Distribution</h3>
+  <ul>
+    <li><strong>7-day epochs</strong> — permissionless finalization by any user</li>
+    <li>Distributed <strong>proportionally by vested lock weight</strong></li>
+    <li><strong>Oracle-free</strong> — all calculations on-chain and deterministic</li>
+    <li><strong>Single-transaction claims</strong> — no snapshots required</li>
+  </ul>
+  <div class="box box-blue"><div class="box-title">● Zero-Weight Epoch Handling</div>When an epoch has no vested weight (only possible in the first 10 days after launch), the epoch is skipped. Those emissions are never distributed — further reducing the effective supply. This is <strong>intentional behavior</strong> reinforcing the principle: no participation, no rewards.</div>
+
+  <!-- REDEMPTION -->
+  <h2 id="redemption"><span class="ico">⑦</span>Redemption &amp; Deflation</h2>
+  <blockquote>The user must burn <strong>100% of all DMD minted from that specific locked position</strong>. No partial burns. No governance exceptions. No alternative exits.</blockquote>
+  <h3><span class="ico">⏩</span>Early Unlock Option</h3>
+  <div class="steps">
+    <div class="step"><div class="step-n">1</div><div class="step-body"><div class="step-t">Request</div><p>Call <code>requestEarlyUnlock(positionId)</code> — weight removed immediately, stops earning DMD.</p></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-body"><div class="step-t">Wait 30 Days</div><p>Mandatory cooldown period. Can cancel anytime with <code>cancelEarlyUnlock(positionId)</code> to restore weight.</p></div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-body"><div class="step-t">Redeem</div><p>Call <code>redeem(positionId)</code> — burn all earned DMD, receive tBTC back.</p></div></div>
+  </div>
+  <h3><span class="ico">◈</span>Market-Driven Deflation</h3>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-icon">▼</div><div class="feat-label">Market Stress</div><div class="feat-desc">More redemptions → accelerated DMD burns → faster supply reduction.</div></div>
+    <div class="feat"><div class="feat-icon">▲</div><div class="feat-label">Market Optimism</div><div class="feat-desc">Fewer redemptions → supply freeze → scarcity accumulates.</div></div>
+  </div>
+  <h3><span class="ico">◈</span>Micro-Deflation</h3>
+  <p>The weight formula uses integer division, causing negligible sub-wei "dust" truncation on every calculation. While individually insignificant, this creates <strong>structural micro-deflation</strong> across all protocol operations. This is intentional behavior — not a bug.</p>
+
+  <!-- PDC -->
+  <h2 id="pdc"><span class="ico">⑧</span>Protocol Defense Consensus (PDC)</h2>
+  <div class="box box-blue"><div class="box-title">● Scope</div>PDC is a minimal, adapter-only voting system that exists <em>solely</em> to manage external tBTC bridge integrations. It has <strong>zero authority</strong> over the monetary core of the protocol.</div>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-icon">◆</div><div class="feat-label">PDC CAN</div><div class="feat-desc">Pause/resume compromised adapters · Approve new adapters · Deprecate obsolete adapters</div></div>
+    <div class="feat"><div class="feat-icon">⊘</div><div class="feat-label">PDC CANNOT</div><div class="feat-desc">Change emissions · Modify supply · Move/freeze BTC · Upgrade contracts · Change redemption rules</div></div>
+  </div>
+  <h3><span class="ico">⊗</span>Activation Conditions</h3>
+  <p>PDC is <strong>completely inert</strong> until BOTH conditions are met simultaneously:</p>
+  <table>
+    <tr><th>Condition</th><th>Threshold</th><th>Rationale</th></tr>
+    <tr><td>● Circulating Supply</td><td>≥ 30% of MAX (5.4M DMD)</td><td>Sufficient distribution</td></tr>
+    <tr><td>◈ Unique Holders</td><td>≥ 10,000 addresses</td><td>Decentralized ownership</td></tr>
+  </table>
+  <h3><span class="ico">◈️</span>Voting Mechanics</h3>
+  <table>
+    <tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
+    <tr><td>Quorum</td><td><strong>60%</strong> of circulating supply</td><td>Very high participation required</td></tr>
+    <tr><td>Approval</td><td><strong>75%</strong> of votes cast</td><td>Supermajority consensus</td></tr>
+    <tr><td>Voting Period</td><td>14 days</td><td>Adequate deliberation</td></tr>
+    <tr><td>Execution Delay</td><td>7 days</td><td>User response time</td></tr>
+    <tr><td>Cooldown</td><td>30 days</td><td>Prevent governance spam</td></tr>
+  </table>
+  <pre>IDLE → VOTING (14d) → QUEUED (7d) → EXECUTED → COOLDOWN (30d) → IDLE
+         ↓ (fails quorum/approval)
+       IDLE</pre>
+
+  <!-- FOUNDATION -->
+  <h2 id="foundation"><span class="ico">◈️</span>DMD Foundation</h2>
+  <p>The DMD Foundation is a formal early community formed to support initial technical coordination and public understanding of DMD Protocol. The Foundation does <strong>not control, administer, or govern</strong> the protocol.</p>
+  <div class="box box-dark"><div class="box-title">⬛ Foundation Role is Strictly Limited To</div>
+    <ul>
+      <li>Supporting open discussion, documentation, and education</li>
+      <li>Encouraging accurate, non-misleading understanding of the protocol</li>
+      <li>Conducting preparatory research on alternative BTC connectivity as a contingency only</li>
+    </ul>
+  </div>
+  <p>The Foundation does not manage markets, influence price, guarantee value, or provide investment advice. Its role is <strong>temporary by design</strong> and expected to diminish as the community becomes self-sustaining.</p>
+
+  <!-- SECURITY -->
+  <h2 id="security"><span class="ico">◈</span>Security Model</h2>
+  <h3><span class="ico">▶</span>Flash Loan Protection</h3>
+  <table>
+    <tr><th>Period</th><th>Weight</th></tr>
+    <tr><td>Days 0–7 (warmup)</td><td>0% — no weight active</td></tr>
+    <tr><td>Days 7–10 (vesting)</td><td>Linear 0% → 100%</td></tr>
+    <tr><td>Day 10+ (active)</td><td>◆ Full weight active</td></tr>
+  </table>
+  <h3><span class="ico">◈️</span>Additional Protections</h3>
+  <ul>
+    <li><strong>CEI pattern</strong> enforced throughout all contracts</li>
+    <li><strong>Solidity 0.8.x</strong> overflow/underflow protection</li>
+    <li><strong>MAX_POSITIONS_PER_USER = 100</strong> — prevents gas DoS attacks</li>
+    <li><strong>No oracles</strong> in core logic — zero oracle dependency risk</li>
+    <li><strong>No governance</strong> — removes entire class of governance attack vectors</li>
+  </ul>
+
+  <!-- TECHNICAL SPEC -->
+  <h2 id="technical"><span class="ico">⚙️</span>Technical Specification</h2>
+  <table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Chain</td><td>Base (Chain ID 8453)</td></tr>
+    <tr><td>Solidity</td><td>^0.8.20</td></tr>
+    <tr><td>Reserve Asset</td><td>tBTC — <code>0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b</code></td></tr>
+    <tr><td>Epoch Length</td><td>7 days</td></tr>
+    <tr><td>Max Weight Multiplier</td><td>1.48× (at 24 months)</td></tr>
+    <tr><td>Weight Vesting</td><td>10 days (7-day warmup + 3-day linear)</td></tr>
+    <tr><td>Early Unlock Delay</td><td>30 days</td></tr>
+    <tr><td>Max Positions / User</td><td>100</td></tr>
+    <tr><td>Upgradeability</td><td>None</td></tr>
+  </table>
+  <h3><span class="ico">◈</span>Deployed Contracts — Base Mainnet</h3>
+  <table>
+    <tr><th>Contract</th><th>Address</th></tr>
+    <tr><td>◈️ PDC</td><td><code>0x881752EB314E3E562b411a6EF92f12f0f6B895Ee</code></td></tr>
+    <tr><td>● BTCReserveVault</td><td><code>0x4eFDA2509fc24dCCf6Bc82f679463996993B2b4a</code></td></tr>
+    <tr><td>◈ EmissionScheduler</td><td><code>0xB9669c647cC6f753a8a9825F54778f3f172c4017</code></td></tr>
+    <tr><td>◈ MintDistributor</td><td><code>0xcccD12bCb557FCE8a9e23ECFAd178Ecc663058Da</code></td></tr>
+    <tr><td>◆ DMDToken</td><td><code>0xc41848d1548a16F87C7e61296A8d2Dc6e9cb07E8</code></td></tr>
+    <tr><td>⊘ RedemptionEngine</td><td><code>0xF86d34387A8bE42e4301C3500C467A57F0358204</code></td></tr>
+    <tr><td>⏳ VestingContract</td><td><code>0xFcef2017590A4cF73E457535A4077e606dA2Cd9A</code></td></tr>
+    <tr><td>₿ tBTC (External)</td><td><code>0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b</code></td></tr>
+  </table>
+
+  <!-- TESTING -->
+  <h2 id="testing"><span class="ico">◈</span>Audits &amp; Testing</h2>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val stat-accent">160+</div><div class="stat-lbl">Automated Tests</div></div>
+    <div class="stat"><div class="stat-val stat-accent">100%</div><div class="stat-lbl">Critical Path Coverage</div></div>
+    <div class="stat"><div class="stat-val stat-accent">A+</div><div class="stat-lbl">Security Rating</div></div>
+  </div>
+  <ul>
+    <li>◆ Flash-loan attack simulations passed</li>
+    <li>◆ Supply invariants verified across all edge cases</li>
+    <li>◆ Full burn redemption logic tested</li>
+    <li>◆ Zero-weight epoch handling verified</li>
+    <li>◆ Early unlock + cancellation flows tested</li>
+  </ul>
+
+  <!-- RISKS -->
+  <h2 id="risks"><span class="ico">◆</span>Risks &amp; Disclosures</h2>
+  <div class="box box-warn"><div class="box-title">◆ Important Risk Factors</div>
+    <ul style="list-style:none;padding:0;margin:0">
+      <li style="padding:3px 0;color:var(--tm)">◉ <strong style="color:var(--tm)">Immutability:</strong> No bug fixes possible post-deployment</li>
+      <li style="padding:3px 0;color:var(--tm)">◉ <strong style="color:var(--tm)">Early Unlock:</strong> 30-day wait, weight removed immediately on request</li>
+      <li style="padding:3px 0;color:var(--tm)">◉ <strong style="color:var(--tm)">Liquidity:</strong> DMD liquidity depends on market adoption</li>
+      <li style="padding:3px 0;color:var(--tm)">◉ <strong style="color:var(--tm)">Self-Custody:</strong> Losing your private key = permanent loss of assets</li>
+      <li style="padding:3px 0;color:var(--tm)">◉ <strong style="color:var(--tm)">External Dependency:</strong> tBTC is an independent system outside protocol control</li>
+    </ul>
+  </div>
+  <p>This document is <strong>not financial advice</strong>. Protocol provided "as-is". Users are solely responsible for all actions taken.</p>
+
+  <!-- ROADMAP -->
+  <h2 id="roadmap"><span class="ico">◈️</span>Roadmap</h2>
+  <ul>
+    <li>◆ Architecture finalized</li>
+    <li>◆ EDAD patent filed</li>
+    <li>◆ Testnet complete</li>
+    <li>◆ Base Mainnet deployment</li>
+    <li>◆ Epoch 0 emissions live</li>
+    <li>◎ Analytics dashboards</li>
+    <li>◎ Ecosystem integrations (DeFiLlama, CoinGecko)</li>
+    <li>◎ PDC activation milestone (10,000 holders)</li>
+  </ul>
+  <div class="box box-dark"><div class="box-title">⬛ Note</div>No protocol upgrades are planned or possible. The roadmap covers ecosystem tooling and integrations only — the protocol itself is permanent.</div>
+
+  <!-- IP -->
+  <h2 id="ip"><span class="ico">◈️</span>Intellectual Property Notice</h2>
+  <div class="box box-blue"><div class="box-title">● Patent Pending</div>The <strong>Extreme Deflationary Digital Asset Mechanism (EDAD)</strong> implemented by DMD Protocol is the subject of a <strong>pending U.S. patent application</strong>. Open-source code remains freely usable; the underlying economic mechanism is protected from unauthorized commercial replication.</div>
+
+  <div class="doc-footer">
+    <div><div class="doc-footer-name">⬡ DMD Protocol v1.8.8</div><div class="doc-footer-sub">Immutable · Bitcoin-backed · Structurally Deflationary · Base Mainnet · January 2026</div></div>
+    <div class="doc-footer-links">
+      <a href="UserGuide.html">User Guide</a>
+      <a href="FAQ.html">FAQ</a>
+      <a href="README.html">README</a>
+      <a href="index.html">← App</a>
+    </div>
+  </div>
+</main>
+</div>
+<script>
+window.addEventListener('scroll',()=>{
+  const secs=document.querySelectorAll('h2[id]');
+  let cur='';
+  secs.forEach(s=>{if(s.getBoundingClientRect().top<120)cur=s.id});
+  if(cur)document.querySelectorAll('.sb-link').forEach(l=>{
+    const href=l.getAttribute('href');
+    l.classList.toggle('active',href==='#'+cur);
+  });
+});
+</script>
+</body>
+</html>
